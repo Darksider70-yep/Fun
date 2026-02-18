@@ -1,23 +1,43 @@
 body {
-  background: #0e0e0e;
-  color: #eaeaea;
+  background: radial-gradient(circle, #0f0f0f, #050505);
+  color: #e5e5e5;
   font-family: monospace;
   text-align: center;
+  margin-top: 40px;
+}
+
+.subtitle {
+  opacity: 0.7;
+  font-size: 0.9rem;
 }
 
 #game {
-  width: 300px;
-  height: 300px;
+  width: 320px;
+  height: 320px;
   margin: 30px auto;
   position: relative;
-  border: 1px solid #444;
+  border: 1px solid #333;
 }
 
 #box {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   background: #4ade80;
   position: absolute;
   display: none;
-  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-around;
+  width: 320px;
+  margin: 0 auto;
+  opacity: 0.85;
+}
+
+#status {
+  margin-top: 20px;
+  min-height: 1.2em;
+  opacity: 0.9;
 }
