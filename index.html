@@ -3,100 +3,161 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokémon Red</title>
+  <title>Pokémon Red — Fan Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="gameboy-shell">
-    <div id="screen-bezel">
-      <div id="power-led"></div>
-      <div id="screen-container">
-        <canvas id="gameCanvas" width="160" height="144"></canvas>
-        <!-- UI Overlays -->
-        <div id="dialog-box" class="hidden">
-          <div id="dialog-text"></div>
-          <div id="dialog-cursor">▼</div>
-        </div>
-        <div id="battle-screen" class="hidden">
-          <div id="battle-bg"></div>
-          <div id="enemy-info">
-            <div id="enemy-name-hp">
-              <span id="enemy-name">WILD CHARMANDER</span> <span id="enemy-level">Lv5</span>
-              <div class="hp-bar-wrap"><div id="enemy-hp-bar"></div></div>
-            </div>
-            <div id="enemy-sprite">🔥</div>
-          </div>
-          <div id="player-info">
-            <div id="player-sprite">🐢</div>
-            <div id="player-name-hp">
-              <span id="player-name">SQUIRTLE</span> <span id="player-level">Lv5</span>
-              <div class="hp-bar-wrap"><div id="player-hp-bar"></div></div>
-              <div id="player-hp-text">HP: <span id="player-hp-num">20</span>/20</div>
-            </div>
-          </div>
-          <div id="battle-menu">
-            <div id="battle-text">What will <span id="battle-pokemon-name">SQUIRTLE</span> do?</div>
-            <div id="battle-options">
-              <div class="battle-opt selected" data-action="fight">FIGHT</div>
-              <div class="battle-opt" data-action="bag">BAG</div>
-              <div class="battle-opt" data-action="pokemon">POKéMON</div>
-              <div class="battle-opt" data-action="run">RUN</div>
-            </div>
-          </div>
-          <div id="move-menu" class="hidden">
-            <div id="move-list"></div>
-          </div>
-        </div>
-        <div id="start-menu" class="hidden">
-          <div class="menu-title">▶ MENU</div>
-          <div class="menu-item selected" data-action="pokemon">POKéMON</div>
-          <div class="menu-item" data-action="save">SAVE</div>
-          <div class="menu-item" data-action="quit">QUIT</div>
-        </div>
-        <div id="intro-screen">
-          <div id="intro-title">POKéMON</div>
-          <div id="intro-subtitle">RED VERSION</div>
-          <div id="intro-prompt">PRESS START</div>
-          <div id="intro-prof">🎓</div>
-        </div>
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-screen">
+    <div id="intro-particles"></div>
+    <div id="intro-content">
+      <div id="intro-logo">
+        <span class="logo-poke">Poké</span><span class="logo-mon">mon</span>
       </div>
-      <div id="gameboy-label">
-        <span>GAME BOY</span>
-        <span class="tm">™</span>
-      </div>
-    </div>
-    <div id="controls">
-      <div id="dpad">
-        <button class="dpad-btn" id="btn-up" data-key="ArrowUp">▲</button>
-        <div id="dpad-mid">
-          <button class="dpad-btn" id="btn-left" data-key="ArrowLeft">◄</button>
-          <div id="dpad-center"></div>
-          <button class="dpad-btn" id="btn-right" data-key="ArrowRight">►</button>
-        </div>
-        <button class="dpad-btn" id="btn-down" data-key="ArrowDown">▼</button>
-      </div>
-      <div id="action-buttons">
-        <div id="ab-row">
-          <button class="action-btn" id="btn-b" data-key="b">B</button>
-          <button class="action-btn" id="btn-a" data-key="a">A</button>
-        </div>
-        <div id="start-select-row">
-          <button class="ss-btn" id="btn-select" data-key="select">SELECT</button>
-          <button class="ss-btn" id="btn-start" data-key="start">START</button>
-        </div>
-      </div>
-    </div>
-    <div id="speaker-grille">
-      <div class="speaker-hole"></div>
-      <div class="speaker-hole"></div>
-      <div class="speaker-hole"></div>
-      <div class="speaker-hole"></div>
-      <div class="speaker-hole"></div>
+      <div id="intro-version">RED VERSION</div>
+      <div id="intro-pikachu">⚡</div>
+      <div id="intro-prompt">— PRESS ENTER TO START —</div>
+      <div id="intro-copy">© 1996 NINTENDO / CREATURES / GAME FREAK · Fan Remake</div>
     </div>
   </div>
-  <div id="instructions">
-    <b>Arrow Keys / WASD</b> — Move &nbsp;|&nbsp; <b>A / Z</b> — Confirm &nbsp;|&nbsp; <b>B / X</b> — Cancel/Back &nbsp;|&nbsp; <b>Enter</b> — START &nbsp;|&nbsp; <b>Shift</b> — SELECT
+
+  <!-- GAME CONTAINER -->
+  <div id="game-wrap" class="hidden">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- HUD TOP BAR -->
+    <div id="hud-top">
+      <div id="hud-player">
+        <span id="hud-name">RED</span>
+        <span id="hud-location">PALLET TOWN</span>
+      </div>
+      <div id="hud-stats">
+        <span id="hud-pokemon-name">—</span>
+        <div class="hud-hp-wrap">
+          <div id="hud-hp-bar"></div>
+        </div>
+        <span id="hud-hp-text">—</span>
+      </div>
+      <div id="hud-right">
+        <span id="hud-wins">🏆 <span id="hud-wins-num">0</span></span>
+        <span id="hud-steps">👟 <span id="hud-steps-num">0</span></span>
+      </div>
+    </div>
+
+    <!-- DIALOG BOX -->
+    <div id="dialog-box" class="hidden">
+      <div id="dialog-portrait"></div>
+      <div id="dialog-inner">
+        <div id="dialog-speaker"></div>
+        <div id="dialog-text"></div>
+      </div>
+      <div id="dialog-cursor">▼</div>
+    </div>
+
+    <!-- BATTLE SCREEN -->
+    <div id="battle-screen" class="hidden">
+      <div id="battle-bg">
+        <canvas id="battleBgCanvas"></canvas>
+      </div>
+
+      <!-- Enemy side -->
+      <div id="enemy-panel">
+        <div id="enemy-card">
+          <div id="enemy-tag">Wild</div>
+          <div id="enemy-name">PIDGEY</div>
+          <div id="enemy-level">Lv.3</div>
+          <div class="hp-label">HP</div>
+          <div class="hp-bar-track"><div id="enemy-hp-bar"></div></div>
+        </div>
+        <div id="enemy-sprite-wrap">
+          <div id="enemy-sprite">🐦</div>
+          <div id="enemy-shadow"></div>
+        </div>
+      </div>
+
+      <!-- Player side -->
+      <div id="player-panel">
+        <div id="player-sprite-wrap">
+          <div id="player-sprite">🐢</div>
+          <div id="player-shadow"></div>
+        </div>
+        <div id="player-card">
+          <div id="player-poke-name">SQUIRTLE</div>
+          <div id="player-level">Lv.5</div>
+          <div class="hp-label">HP</div>
+          <div class="hp-bar-track"><div id="player-hp-bar"></div></div>
+          <div id="player-hp-text">20 / 20</div>
+          <div id="player-xp-track"><div id="player-xp-bar"></div></div>
+        </div>
+      </div>
+
+      <!-- Battle Message + Menu -->
+      <div id="battle-ui">
+        <div id="battle-message-box">
+          <div id="battle-msg">What will SQUIRTLE do?</div>
+        </div>
+        <div id="battle-menu">
+          <div class="battle-opt selected" data-i="0">⚔ FIGHT</div>
+          <div class="battle-opt" data-i="1">🎒 BAG</div>
+          <div class="battle-opt" data-i="2">🔄 POKÉMON</div>
+          <div class="battle-opt" data-i="3">🏃 RUN</div>
+        </div>
+        <!-- Move submenu -->
+        <div id="move-menu" class="hidden">
+          <div id="move-list"></div>
+          <div id="move-info">
+            <div id="move-type">—</div>
+            <div id="move-pp">PP: —</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Particles overlay -->
+      <div id="battle-particles"></div>
+    </div>
+
+    <!-- START MENU -->
+    <div id="start-menu" class="hidden">
+      <div class="sm-header">
+        <div id="sm-avatar">🧢</div>
+        <div id="sm-player-name">RED</div>
+      </div>
+      <div class="sm-divider"></div>
+      <div class="menu-item selected" data-action="pokemon">📋 POKÉMON</div>
+      <div class="menu-item" data-action="bag">🎒 BAG</div>
+      <div class="menu-item" data-action="save">💾 SAVE</div>
+      <div class="menu-item" data-action="options">⚙ OPTIONS</div>
+      <div class="menu-item" data-action="quit">🚪 QUIT</div>
+    </div>
+
+    <!-- POKEMON DETAIL PANEL -->
+    <div id="pokemon-panel" class="hidden">
+      <div id="pokemon-panel-header">
+        <button id="pokemon-panel-close">✕</button>
+        <span>POKÉMON STATUS</span>
+      </div>
+      <div id="pokemon-panel-body">
+        <div id="pp-sprite"></div>
+        <div id="pp-info"></div>
+        <div id="pp-moves"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="hidden"></div>
+
+    <!-- CONTROLS HINT -->
+    <div id="controls-hint">
+      <span>Arrow / WASD: Move</span>
+      <span>A / Z: Confirm</span>
+      <span>B / X: Cancel</span>
+      <span>Enter: Menu</span>
+    </div>
   </div>
+
   <script src="game.js"></script>
 </body>
 </html>
