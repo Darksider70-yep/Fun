@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Pokémon Red — Fan Edition</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -10,153 +10,294 @@
 </head>
 <body>
 
-  <!-- INTRO SCREEN -->
+  <!-- ══ INTRO / TITLE SCREEN ══ -->
   <div id="intro-screen">
-    <div id="intro-particles"></div>
+    <canvas id="introBgCanvas"></canvas>
     <div id="intro-content">
       <div id="intro-logo">
-        <span class="logo-poke">Poké</span><span class="logo-mon">mon</span>
+        <div class="logo-shadow">POKÉMON</div>
+        <div class="logo-main">POKÉMON</div>
       </div>
-      <div id="intro-version">RED VERSION</div>
-      <div id="intro-pikachu">⚡</div>
+      <div id="intro-version">◆ RED VERSION ◆</div>
+      <div id="intro-mascot">🔴</div>
       <div id="intro-prompt">— PRESS ENTER TO START —</div>
-      <div id="intro-copy">© 1996 NINTENDO / CREATURES / GAME FREAK · Fan Remake</div>
+      <div id="intro-save-info"></div>
+      <div id="intro-copy">Fan Remake · Not affiliated with Nintendo / Game Freak</div>
     </div>
   </div>
 
-  <!-- GAME CONTAINER -->
+  <!-- ══ STARTER SELECTION ══ -->
+  <div id="starter-screen" class="hidden">
+    <div id="starter-bg"></div>
+    <div id="starter-content">
+      <div id="starter-header">
+        <div id="starter-portrait">🎓</div>
+        <div id="starter-dialog-box">
+          <div id="starter-speaker">PROF. OAK</div>
+          <div id="starter-text">Welcome to the world of POKÉMON! Choose your first partner!</div>
+        </div>
+      </div>
+      <div id="starter-cards">
+        <div class="starter-card" data-pokemon="BULBASAUR" data-idx="0">
+          <div class="s-type-badge type-GRASS">GRASS · POISON</div>
+          <div class="s-emoji">🌱</div>
+          <div class="s-name">BULBASAUR</div>
+          <div class="s-desc">Gentle & defensive. Leech Seed drains foes over time.</div>
+          <div class="s-bars">
+            <div class="sbar-row"><span>HP</span><div class="sbar"><div style="width:85%;background:#30d040"></div></div></div>
+            <div class="sbar-row"><span>ATK</span><div class="sbar"><div style="width:62%;background:#e0c020"></div></div></div>
+            <div class="sbar-row"><span>DEF</span><div class="sbar"><div style="width:80%;background:#4888f8"></div></div></div>
+            <div class="sbar-row"><span>SPD</span><div class="sbar"><div style="width:60%;background:#f85888"></div></div></div>
+          </div>
+        </div>
+        <div class="starter-card selected-starter" data-pokemon="CHARMANDER" data-idx="1">
+          <div class="s-type-badge type-FIRE">FIRE</div>
+          <div class="s-emoji">🔥</div>
+          <div class="s-name">CHARMANDER</div>
+          <div class="s-desc">Fierce & powerful. High attack, learns Dragon Rage later.</div>
+          <div class="s-bars">
+            <div class="sbar-row"><span>HP</span><div class="sbar"><div style="width:65%;background:#30d040"></div></div></div>
+            <div class="sbar-row"><span>ATK</span><div class="sbar"><div style="width:92%;background:#e0c020"></div></div></div>
+            <div class="sbar-row"><span>DEF</span><div class="sbar"><div style="width:50%;background:#4888f8"></div></div></div>
+            <div class="sbar-row"><span>SPD</span><div class="sbar"><div style="width:80%;background:#f85888"></div></div></div>
+          </div>
+        </div>
+        <div class="starter-card" data-pokemon="SQUIRTLE" data-idx="2">
+          <div class="s-type-badge type-WATER">WATER</div>
+          <div class="s-emoji">🐢</div>
+          <div class="s-name">SQUIRTLE</div>
+          <div class="s-desc">Balanced & resilient. Best defence of the three starters.</div>
+          <div class="s-bars">
+            <div class="sbar-row"><span>HP</span><div class="sbar"><div style="width:75%;background:#30d040"></div></div></div>
+            <div class="sbar-row"><span>ATK</span><div class="sbar"><div style="width:70%;background:#e0c020"></div></div></div>
+            <div class="sbar-row"><span>DEF</span><div class="sbar"><div style="width:85%;background:#4888f8"></div></div></div>
+            <div class="sbar-row"><span>SPD</span><div class="sbar"><div style="width:65%;background:#f85888"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="starter-hint">← → to browse · ENTER or click to confirm</div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN GAME ══ -->
   <div id="game-wrap" class="hidden">
     <canvas id="gameCanvas"></canvas>
+    <div id="daynight-overlay"></div>
 
     <!-- HUD TOP BAR -->
     <div id="hud-top">
-      <div id="hud-player">
-        <span id="hud-name">RED</span>
+      <div id="hud-left">
+        <span id="hud-player-name">RED</span>
         <span id="hud-location">PALLET TOWN</span>
       </div>
-      <div id="hud-stats">
-        <span id="hud-pokemon-name">—</span>
-        <div class="hud-hp-wrap">
-          <div id="hud-hp-bar"></div>
+      <div id="hud-center">
+        <div id="hud-poke-row">
+          <span id="hud-poke-icon">🐢</span>
+          <span id="hud-pokemon-name">SQUIRTLE</span>
+          <span id="hud-level-badge">Lv.5</span>
         </div>
-        <span id="hud-hp-text">—</span>
+        <div id="hud-hp-row">
+          <span class="hud-lbl">HP</span>
+          <div class="hud-bar-wrap"><div id="hud-hp-bar"></div></div>
+          <span id="hud-hp-text">20/20</span>
+        </div>
+        <div id="hud-xp-row">
+          <span class="hud-lbl">EXP</span>
+          <div class="hud-bar-wrap"><div id="hud-xp-bar" style="background:#4488ff"></div></div>
+        </div>
       </div>
       <div id="hud-right">
-        <span id="hud-wins">🏆 <span id="hud-wins-num">0</span></span>
-        <span id="hud-steps">👟 <span id="hud-steps-num">0</span></span>
+        <div id="hud-time-box">🌙</div>
+        <div>🏅 <span id="hud-badge-count">0</span></div>
+        <div>🏆 <span id="hud-wins-num">0</span></div>
+        <div>👟 <span id="hud-steps-num">0</span></div>
+        <div>💰 <span id="hud-money">500</span></div>
       </div>
+    </div>
+
+    <!-- MINIMAP (toggle with M) -->
+    <div id="minimap-wrap">
+      <canvas id="minimapCanvas" width="130" height="108"></canvas>
+      <div id="minimap-label">MAP [M]</div>
     </div>
 
     <!-- DIALOG BOX -->
     <div id="dialog-box" class="hidden">
-      <div id="dialog-portrait"></div>
-      <div id="dialog-inner">
+      <div id="dialog-portrait-wrap">
+        <div id="dialog-portrait">💬</div>
         <div id="dialog-speaker"></div>
-        <div id="dialog-text"></div>
       </div>
-      <div id="dialog-cursor">▼</div>
+      <div id="dialog-body">
+        <div id="dialog-text"></div>
+        <div id="dialog-cursor">▼</div>
+      </div>
     </div>
 
     <!-- BATTLE SCREEN -->
     <div id="battle-screen" class="hidden">
-      <div id="battle-bg">
-        <canvas id="battleBgCanvas"></canvas>
-      </div>
+      <canvas id="battleBgCanvas"></canvas>
+      <canvas id="battleFxCanvas"></canvas>
 
-      <!-- Enemy side -->
-      <div id="enemy-panel">
-        <div id="enemy-card">
-          <div id="enemy-tag">Wild</div>
-          <div id="enemy-name">PIDGEY</div>
-          <div id="enemy-level">Lv.3</div>
-          <div class="hp-label">HP</div>
-          <div class="hp-bar-track"><div id="enemy-hp-bar"></div></div>
+      <div id="enemy-zone">
+        <div id="enemy-info-card">
+          <div id="enemy-name-row">
+            <span id="enemy-tag">WILD</span>
+            <span id="enemy-name">PIDGEY</span>
+            <span id="enemy-gender">♂</span>
+            <span id="enemy-status-badge" class="status-hidden"></span>
+          </div>
+          <span id="enemy-level">Lv.3</span>
+          <div class="bt-hp-label">HP</div>
+          <div class="bt-hp-track"><div id="enemy-hp-bar"></div></div>
         </div>
         <div id="enemy-sprite-wrap">
-          <div id="enemy-sprite">🐦</div>
-          <div id="enemy-shadow"></div>
+          <canvas id="enemySpriteCanvas"></canvas>
+          <div class="sprite-shadow"></div>
         </div>
       </div>
 
-      <!-- Player side -->
-      <div id="player-panel">
+      <div id="player-zone">
         <div id="player-sprite-wrap">
-          <div id="player-sprite">🐢</div>
-          <div id="player-shadow"></div>
+          <canvas id="playerSpriteCanvas"></canvas>
+          <div class="sprite-shadow"></div>
         </div>
-        <div id="player-card">
-          <div id="player-poke-name">SQUIRTLE</div>
-          <div id="player-level">Lv.5</div>
-          <div class="hp-label">HP</div>
-          <div class="hp-bar-track"><div id="player-hp-bar"></div></div>
-          <div id="player-hp-text">20 / 20</div>
-          <div id="player-xp-track"><div id="player-xp-bar"></div></div>
+        <div id="player-info-card">
+          <div id="player-name-row">
+            <span id="player-poke-name">SQUIRTLE</span>
+            <span id="player-gender">♂</span>
+            <span id="player-status-badge" class="status-hidden"></span>
+          </div>
+          <span id="player-level">Lv.5</span>
+          <div class="bt-hp-label-row">
+            <span>HP</span><span id="player-hp-text">20 / 20</span>
+          </div>
+          <div class="bt-hp-track"><div id="player-hp-bar"></div></div>
+          <div class="bt-xp-label">EXP</div>
+          <div class="bt-xp-track"><div id="player-xp-bar"></div></div>
         </div>
       </div>
 
-      <!-- Battle Message + Menu -->
       <div id="battle-ui">
         <div id="battle-message-box">
           <div id="battle-msg">What will SQUIRTLE do?</div>
         </div>
-        <div id="battle-menu">
-          <div class="battle-opt selected" data-i="0">⚔ FIGHT</div>
-          <div class="battle-opt" data-i="1">🎒 BAG</div>
-          <div class="battle-opt" data-i="2">🔄 POKÉMON</div>
-          <div class="battle-opt" data-i="3">🏃 RUN</div>
-        </div>
-        <!-- Move submenu -->
-        <div id="move-menu" class="hidden">
-          <div id="move-list"></div>
-          <div id="move-info">
-            <div id="move-type">—</div>
-            <div id="move-pp">PP: —</div>
+        <div id="battle-action-panel">
+          <!-- Main menu -->
+          <div id="battle-menu">
+            <div class="b-opt selected" data-i="0">⚔ FIGHT</div>
+            <div class="b-opt" data-i="1">🎒 BAG</div>
+            <div class="b-opt" data-i="2">🔄 POKÉMON</div>
+            <div class="b-opt" data-i="3">🏃 RUN</div>
+          </div>
+          <!-- Move selection -->
+          <div id="move-menu" class="hidden">
+            <div id="move-grid"></div>
+            <div id="move-sidebar">
+              <div id="ms-type">—</div>
+              <div id="ms-pwr">PWR —</div>
+              <div id="ms-acc">ACC —%</div>
+              <div id="ms-pp">PP —/—</div>
+              <div id="ms-cat">—</div>
+            </div>
+          </div>
+          <!-- Bag in battle -->
+          <div id="bag-battle-menu" class="hidden">
+            <div id="bag-battle-list"></div>
           </div>
         </div>
       </div>
 
-      <!-- Particles overlay -->
-      <div id="battle-particles"></div>
-    </div>
-
-    <!-- START MENU -->
-    <div id="start-menu" class="hidden">
-      <div class="sm-header">
-        <div id="sm-avatar">🧢</div>
-        <div id="sm-player-name">RED</div>
+      <!-- Catch animation -->
+      <div id="catch-overlay" class="hidden">
+        <div id="pokeball-anim">⚫</div>
+        <div id="catch-result"></div>
       </div>
-      <div class="sm-divider"></div>
+    </div><!-- /battle-screen -->
+
+    <!-- START / PAUSE MENU -->
+    <div id="start-menu" class="hidden">
+      <div id="sm-header">
+        <div id="sm-avatar">🧢</div>
+        <div>
+          <div id="sm-player-name">RED</div>
+          <div id="sm-money">💰 <span id="sm-money-val">500</span></div>
+        </div>
+      </div>
+      <div class="sm-sep"></div>
       <div class="menu-item selected" data-action="pokemon">📋 POKÉMON</div>
       <div class="menu-item" data-action="bag">🎒 BAG</div>
+      <div class="menu-item" data-action="map">🗺 TOWN MAP</div>
       <div class="menu-item" data-action="save">💾 SAVE</div>
       <div class="menu-item" data-action="options">⚙ OPTIONS</div>
-      <div class="menu-item" data-action="quit">🚪 QUIT</div>
+      <div class="menu-item" data-action="quit">🚪 TITLE SCREEN</div>
     </div>
 
-    <!-- POKEMON DETAIL PANEL -->
+    <!-- POKÉMON DETAIL PANEL -->
     <div id="pokemon-panel" class="hidden">
-      <div id="pokemon-panel-header">
-        <button id="pokemon-panel-close">✕</button>
-        <span>POKÉMON STATUS</span>
+      <div id="pp-header">
+        <button id="pp-close">✕</button>
+        <span id="pp-title">POKÉMON STATUS</span>
       </div>
-      <div id="pokemon-panel-body">
-        <div id="pp-sprite"></div>
-        <div id="pp-info"></div>
-        <div id="pp-moves"></div>
+      <div id="pp-body">
+        <div id="pp-left">
+          <div id="pp-sprite-big"></div>
+          <div id="pp-type-badges"></div>
+          <div id="pp-flavor"></div>
+        </div>
+        <div id="pp-mid">
+          <div id="pp-stats-grid"></div>
+          <div id="pp-xp-section">
+            <span>EXP</span>
+            <div id="pp-xp-track"><div id="pp-xp-bar"></div></div>
+            <span id="pp-xp-label"></span>
+          </div>
+        </div>
+        <div id="pp-right">
+          <div class="pp-section-title">MOVES</div>
+          <div id="pp-moves-list"></div>
+        </div>
       </div>
     </div>
 
-    <!-- NOTIFICATION TOAST -->
+    <!-- SHOP PANEL -->
+    <div id="shop-panel" class="hidden">
+      <div id="shop-header">
+        <span>🏪 POKÉ MART</span>
+        <button id="shop-close">✕</button>
+      </div>
+      <div id="shop-body">
+        <div id="shop-left">
+          <div id="shop-items"></div>
+        </div>
+        <div id="shop-right">
+          <div id="shop-item-info">
+            <div id="shop-item-name">—</div>
+            <div id="shop-item-desc">Select an item.</div>
+            <div id="shop-item-price"></div>
+          </div>
+          <button id="shop-buy-btn" class="hidden">BUY</button>
+          <div id="shop-wallet">💰 <span id="shop-wallet-val">500</span></div>
+          <div class="pp-section-title" style="margin-top:12px">YOUR BAG</div>
+          <div id="shop-bag-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
     <div id="toast" class="hidden"></div>
+
+    <!-- LEVEL UP BANNER -->
+    <div id="levelup-banner" class="hidden">⭐ <span id="levelup-text"></span></div>
 
     <!-- CONTROLS HINT -->
     <div id="controls-hint">
-      <span>Arrow / WASD: Move</span>
-      <span>A / Z: Confirm</span>
-      <span>B / X: Cancel</span>
-      <span>Enter: Menu</span>
+      <span>WASD: Move</span>
+      <span>Z: Confirm</span>
+      <span>X: Cancel</span>
+      <span>Space/Enter: Menu</span>
+      <span>M: Toggle Map</span>
     </div>
-  </div>
+  </div><!-- /game-wrap -->
 
   <script src="game.js"></script>
 </body>
