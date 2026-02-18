@@ -1,72 +1,64 @@
-const box = document.getElementById("box");
-const scoreEl = document.getElementById("score");
-const statusEl = document.getElementById("status");
-const levelEl = document.getElementById("level");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const info = document.getElementById("info");
 
-const grid = [0, 70, 140, 210, 280];
+let player = { x: 5, y: 5 };
+let mode = "map"; // map | battle
+let enemyHP = 10;
 
-let score = 0;
-let stability = 1;
-let index = 0;
-let pattern = [];
-let nextPos = null;
+function drawMap() {
+  ctx.fillStyle = "#88c070";
+  ctx.fillRect(0, 0, 320, 320);
 
-function generatePattern() {
-  pattern = [];
-  for (let i = 0; i < 10; i++) {
-    pattern.push({
-      x: grid[(i * stability) % grid.length],
-      y: grid[(i * (stability + 1)) % grid.length]
-    });
+  ctx.fillStyle = "#000";
+  ctx.fillRect(player.x * 32, player.y * 32, 32, 32);
+}
+
+function drawBattle() {
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, 320, 320);
+
+  ctx.fillStyle = "#000";
+  ctx.fillText("A wild MON appeared!", 50, 80);
+  ctx.fillText("Enemy HP: " + enemyHP, 50, 120);
+  ctx.fillText("[ CLICK TO ATTACK ]", 50, 180);
+}
+
+function render() {
+  ctx.clearRect(0, 0, 320, 320);
+  ctx.font = "14px monospace";
+
+  if (mode === "map") drawMap();
+  else drawBattle();
+}
+
+document.addEventListener("keydown", (e) => {
+  if (mode !== "map") return;
+
+  if (e.key === "ArrowUp") player.y--;
+  if (e.key === "ArrowDown") player.y++;
+  if (e.key === "ArrowLeft") player.x--;
+  if (e.key === "ArrowRight") player.x++;
+
+  player.x = Math.max(0, Math.min(9, player.x));
+  player.y = Math.max(0, Math.min(9, player.y));
+
+  if (Math.random() < 0.1) {
+    mode = "battle";
+    info.textContent = "Battle!";
   }
-}
+});
 
-function show(pos, duration = 600) {
-  box.style.left = pos.x + "px";
-  box.style.top = pos.y + "px";
-  box.style.display = "block";
-  setTimeout(() => (box.style.display = "none"), duration);
-}
+canvas.addEventListener("click", () => {
+  if (mode !== "battle") return;
 
-function round() {
-  const current = pattern[index % pattern.length];
-  nextPos = pattern[(index + 1) % pattern.length];
+  enemyHP -= Math.floor(Math.random() * 4) + 1;
 
-  statusEl.textContent = "Observe.";
-  show(current);
-
-  setTimeout(() => {
-    statusEl.textContent = "Predict.";
-    box.style.display = "block";
-    box.style.left = current.x + "px";
-    box.style.top = current.y + "px";
-  }, 700);
-}
-
-box.onclick = () => {
-  const correct =
-    box.style.left === nextPos.x + "px" &&
-    box.style.top === nextPos.y + "px";
-
-  box.style.display = "none";
-
-  if (correct) {
-    score++;
-    index++;
-    statusEl.textContent = "Correct.";
-  } else {
-    statusEl.textContent = "The pattern shifted.";
-    score = 0;
-    index = 0;
-    stability++;
-    generatePattern();
+  if (enemyHP <= 0) {
+    info.textContent = "You won. Adventure continues.";
+    enemyHP = 10;
+    mode = "map";
   }
+});
 
-  scoreEl.textContent = "Score: " + score;
-  levelEl.textContent = "Stability: " + stability;
-
-  setTimeout(round, 700);
-};
-
-generatePattern();
-round();
+setInterval(render, 100);
