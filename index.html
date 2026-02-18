@@ -1,18 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pocket Battle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Red</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Pocket Battle</h1>
-  <p class="subtitle">A very small adventure.</p>
-
-  <canvas id="game" width="320" height="320"></canvas>
-
-  <p id="info">Walk around. Find trouble.</p>
-
+  <div id="gameboy-shell">
+    <div id="screen-bezel">
+      <div id="power-led"></div>
+      <div id="screen-container">
+        <canvas id="gameCanvas" width="160" height="144"></canvas>
+        <!-- UI Overlays -->
+        <div id="dialog-box" class="hidden">
+          <div id="dialog-text"></div>
+          <div id="dialog-cursor">▼</div>
+        </div>
+        <div id="battle-screen" class="hidden">
+          <div id="battle-bg"></div>
+          <div id="enemy-info">
+            <div id="enemy-name-hp">
+              <span id="enemy-name">WILD CHARMANDER</span> <span id="enemy-level">Lv5</span>
+              <div class="hp-bar-wrap"><div id="enemy-hp-bar"></div></div>
+            </div>
+            <div id="enemy-sprite">🔥</div>
+          </div>
+          <div id="player-info">
+            <div id="player-sprite">🐢</div>
+            <div id="player-name-hp">
+              <span id="player-name">SQUIRTLE</span> <span id="player-level">Lv5</span>
+              <div class="hp-bar-wrap"><div id="player-hp-bar"></div></div>
+              <div id="player-hp-text">HP: <span id="player-hp-num">20</span>/20</div>
+            </div>
+          </div>
+          <div id="battle-menu">
+            <div id="battle-text">What will <span id="battle-pokemon-name">SQUIRTLE</span> do?</div>
+            <div id="battle-options">
+              <div class="battle-opt selected" data-action="fight">FIGHT</div>
+              <div class="battle-opt" data-action="bag">BAG</div>
+              <div class="battle-opt" data-action="pokemon">POKéMON</div>
+              <div class="battle-opt" data-action="run">RUN</div>
+            </div>
+          </div>
+          <div id="move-menu" class="hidden">
+            <div id="move-list"></div>
+          </div>
+        </div>
+        <div id="start-menu" class="hidden">
+          <div class="menu-title">▶ MENU</div>
+          <div class="menu-item selected" data-action="pokemon">POKéMON</div>
+          <div class="menu-item" data-action="save">SAVE</div>
+          <div class="menu-item" data-action="quit">QUIT</div>
+        </div>
+        <div id="intro-screen">
+          <div id="intro-title">POKéMON</div>
+          <div id="intro-subtitle">RED VERSION</div>
+          <div id="intro-prompt">PRESS START</div>
+          <div id="intro-prof">🎓</div>
+        </div>
+      </div>
+      <div id="gameboy-label">
+        <span>GAME BOY</span>
+        <span class="tm">™</span>
+      </div>
+    </div>
+    <div id="controls">
+      <div id="dpad">
+        <button class="dpad-btn" id="btn-up" data-key="ArrowUp">▲</button>
+        <div id="dpad-mid">
+          <button class="dpad-btn" id="btn-left" data-key="ArrowLeft">◄</button>
+          <div id="dpad-center"></div>
+          <button class="dpad-btn" id="btn-right" data-key="ArrowRight">►</button>
+        </div>
+        <button class="dpad-btn" id="btn-down" data-key="ArrowDown">▼</button>
+      </div>
+      <div id="action-buttons">
+        <div id="ab-row">
+          <button class="action-btn" id="btn-b" data-key="b">B</button>
+          <button class="action-btn" id="btn-a" data-key="a">A</button>
+        </div>
+        <div id="start-select-row">
+          <button class="ss-btn" id="btn-select" data-key="select">SELECT</button>
+          <button class="ss-btn" id="btn-start" data-key="start">START</button>
+        </div>
+      </div>
+    </div>
+    <div id="speaker-grille">
+      <div class="speaker-hole"></div>
+      <div class="speaker-hole"></div>
+      <div class="speaker-hole"></div>
+      <div class="speaker-hole"></div>
+      <div class="speaker-hole"></div>
+    </div>
+  </div>
+  <div id="instructions">
+    <b>Arrow Keys / WASD</b> — Move &nbsp;|&nbsp; <b>A / Z</b> — Confirm &nbsp;|&nbsp; <b>B / X</b> — Cancel/Back &nbsp;|&nbsp; <b>Enter</b> — START &nbsp;|&nbsp; <b>Shift</b> — SELECT
+  </div>
   <script src="game.js"></script>
 </body>
 </html>
