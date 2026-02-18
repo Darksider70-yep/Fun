@@ -493,7 +493,7 @@
   }
 
   // ─── MOVEMENT ─────────────────────────────────────────────
-  const MOVE_SPEED_RATIO = 0.28; // fraction of TILE per frame
+  const MOVE_SPEED_RATIO = 0.15; // fraction of TILE per frame
 
   function tryMove(dx, dy, dir) {
     if (player.moving) return;
