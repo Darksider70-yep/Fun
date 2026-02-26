@@ -60,239 +60,115 @@
     DOOR: 22, PATH_DARK: 23, WATER_EDGE: 24, STONE: 25,
   };
 
-  // ─── 4-TOWN MAP (80×60) ──────────────────────────────────────────────
-  // Layout:
-  // Pallet Town: cols 0-22, rows 30-59
-  // Route 1:     cols 8-14, rows 10-30
-  // Viridian:    cols 0-22, rows 0-18
-  // Route 2:     cols 8-14, rows -? (above viridian - connect via cave to pewter)
-  // Route 3/22:  cols 22-55, rows 30-59 (east from pallet east)
-  // Cerulean:    cols 55-79, rows 0-20
-  // Pewter:      cols 22-45, rows 0-20
-  // Mt. Moon:    cols 45-55, rows 0-30
+  // ─── MAP ─────────────────────────────────────────────────────────────
+  // Each character = one tile. Map is 48 wide × 50 tall.
+  // Read left-to-right, top-to-bottom.
+  //
+  // Key:
+  //  T = tree (blocked)      . = grass (walkable)
+  //  # = wall (blocked)      ~ = water (blocked)
+  //  P = path                t = tall grass (encounters)
+  //  H = house (red roof)    h = house2 (blue roof)
+  //  L = lab/house3 (brown)  G = gym (purple roof)
+  //  C = pokémon center      M = poké mart
+  //  D = door                S = sign
+  //  F = flower              f = fence
+  //  B = bridge              ^ = ledge (jump down only)
+  //  V = cave entrance       _ = water edge (path over water)
+  //
+  // Layout (48×50):
+  //  rows  0-11  : VIRIDIAN CITY
+  //  rows 12-22  : ROUTE 1 (connecting path)
+  //  rows 23-37  : PALLET TOWN
+  //  rows 38-49  : SOUTH WATER (Route 21 placeholder)
+  //
+  // Columns:
+  //  cols  0- 5  : west border
+  //  cols  6-19  : VIRIDIAN / ROUTE 1 / PALLET
+  //  cols 20-25  : east border / Route 2 stub
+  //
+  // NOTE: This first build is intentionally SMALL and CORRECT.
+  // Pallet Town is at the bottom. Viridian City at the top.
+  // Route 1 connects them through the middle.
+  // All buildings are solid blocks — no procedural math.
 
-  const MW = 80, MH = 60;
+  const MW = 28, MH = 50;
 
-  function buildMap() {
-    const m = new Uint8Array(MW * MH).fill(T.WALL);
+  // prettier-ignore
+  const MAP_STR = [
+  //0         1         2
+  //0123456789012345678901234567
+  'TTTTTTTTTTTTTTTTTTTTTTTTTTTT', // row 0
+  'TCCCCCC.......MMMMMMM.TTTТTT', // row 1  (Viridian: PC left, Mart right)
+  'T######.......#######.TTTTTT', // row 2
+  'T######D.....D#######.TTTTTT', // row 3
+  'T......PPPPPPP......STTTTТTT', // row 4  (horizontal path)
+  'T...S..PPPPPPP......STTTTТTT', // row 5
+  'TGGGGGG.......HHHHHHH.TTTTTT', // row 6  (Viridian: Gym left, House right)
+  'T######.......#######.TTTTTT', // row 7
+  'T######D.....D#######.TTTTTT', // row 8
+  'T......PPPPPPP............TT', // row 9
+  'T......PPPPPPP............TT', // row 10
+  'TTTTTTTTTTPPPTTTTTTTTTTTTTTT', // row 11 - south wall of Viridian
+  'TTTTTTTTT.PPP.TTTTTTTTTTTTTT', // row 12 - route 1 begins
+  'TTTTTTTT..PPP..TTTTTTTTTTTTT', // row 13
+  'T.......t.PPP.t...........TT', // row 14
+  'T.......t.PPP.t...........TT', // row 15
+  'T.......t.PPP.t...........TT', // row 16
+  'T......StSPPP.t...........TT', // row 17 sign on east side
+  'T.......t.PPP.t...........TT', // row 18
+  'T.......t.PPP.t...........TT', // row 19
+  'T.......t.PPP.t...........TT', // row 20
+  '^^^^^^^^^^PPP^^^^^^^^^^^^^TT', // row 21 ledge
+  'T.........PPP.............TT', // row 22
+  'T.......t.PPP.t...........TT', // row 23
+  'T.......t.PPP.t...........TT', // row 24
+  'T.......t.PPP.t...........TT', // row 25
+  'T.......t.PPP.t...........TT', // row 26
+  'T.......t.PPP.t...........TT', // row 27
+  'T.......t.PPP.t...........TT', // row 28
+  'T......StSPPP.t...........TT', // row 29 sign
+  'T.........PPP.............TT', // row 30
+  'TTTTTTTT.TPPPTTTTTTTTTTTTTTT', // row 31 - pallet town north wall
+  'T.......PPPPPP............TT', // row 32 - pallet entry path
+  'T.HHHHH.PPPPPP.hhhhh......TT', // row 33 player house, rival house
+  'T.#####.PPPPPP.#####......TT', // row 34
+  'T.#####.PPPPPP.#####......TT', // row 35
+  'T.##D##.PPPPPP.##D##......TT', // row 36 doors
+  'T.......PPPPPP............TT', // row 37
+  'TFFFFFFPPPPPPPPFFFFFFFFFFF.T', // row 38 fence row
+  'T......PPPPPPPP...........TT', // row 39 - path widens in Pallet
+  'T.LLLLLLLLLL....hhhhh.....TT', // row 40 oak lab (wide), small house
+  'T.##########....#####.....TT', // row 41
+  'T.##########....#####.....TT', // row 42
+  'T.##########....##D##.....TT', // row 43
+  'T.####D#####....FF.FF.....TT', // row 44 lab door
+  'T..S.........S............TT', // row 45 signs
+  'T..FFF.....FFF............TT', // row 46 flower patches
+  'T..FFF.....FFF............TT', // row 47
+  'T~~~~~~~~~~~~~~~~~~~~~~~~~TT', // row 48 water south
+  'TTTTTTTTTTTTTTTTTTTTTTTTTTTT', // row 49
+  ];
 
-    function set(x, y, t) { if (x >= 0 && y >= 0 && x < MW && y < MH) m[y * MW + x] = t; }
-    function fill(x1, y1, x2, y2, t) {
-      for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) set(x, y, t);
+  // character → tile type
+  const CHAR_TO_TILE = {
+    'T': T.TREE,    '.': T.GRASS,  '#': T.WALL,   '~': T.WATER,
+    'P': T.PATH,    't': T.TALL,   'H': T.HOUSE,  'h': T.HOUSE2,
+    'L': T.HOUSE3,  'G': T.GYM,   'C': T.POKE_CENTER, 'M': T.MART,
+    'D': T.DOOR,    'S': T.SIGN,   'F': T.FLOWER, 'f': T.FENCE,
+    'B': T.BRIDGE,  '^': T.LEDGE,  'V': T.CAVE,   '_': T.BRIDGE,
+    ' ': T.GRASS,
+  };
+
+  // Parse the string map into a flat Uint8Array
+  const MAP = new Uint8Array(MW * MH);
+  for (let row = 0; row < MH; row++) {
+    const line = MAP_STR[row] || '';
+    for (let col = 0; col < MW; col++) {
+      const ch = line[col] || 'T';
+      MAP[row * MW + col] = CHAR_TO_TILE[ch] ?? T.WALL;
     }
-    function hline(y, x1, x2, t) { for (let x = x1; x <= x2; x++) set(x, y, t); }
-    function vline(x, y1, y2, t) { for (let y = y1; y <= y2; y++) set(x, y, t); }
-    function house(x, y, w, h, style) {
-      // style: 0=normal, 1=pc, 2=mart, 3=gym
-      const roofH = Math.ceil(h / 3);
-      const wallH = h - roofH;
-      const rf = style === 1 ? T.POKE_CENTER : style === 2 ? T.MART : style === 3 ? T.GYM : (style === 4 ? T.HOUSE2 : T.HOUSE);
-      fill(x, y, x + w - 1, y + roofH - 1, rf);
-      fill(x, y + roofH, x + w - 1, y + h - 1, T.WALL); // walls (blocked)
-      // doors
-      set(x + Math.floor(w / 2), y + h - 1, T.DOOR);
-      // windows
-      if (w >= 4) {
-        set(x + 1, y + roofH + 1, T.WALL);
-        set(x + w - 2, y + roofH + 1, T.WALL);
-      }
-    }
-    function bigHouse(x, y, w, h, style) {
-      const rf = style === 1 ? T.POKE_CENTER : style === 2 ? T.MART : style === 3 ? T.GYM : T.HOUSE;
-      const roofH = 2;
-      fill(x, y, x + w - 1, y + roofH - 1, rf);
-      fill(x, y + roofH, x + w - 1, y + h - 1, T.WALL);
-      // door in center bottom
-      set(x + Math.floor(w / 2), y + h - 1, T.DOOR);
-    }
-
-    // ════════════════════════════════
-    // PALLET TOWN (x:1-21, y:33-58)
-    // ════════════════════════════════
-    fill(1, 33, 21, 58, T.GRASS);
-    // Town paths
-    fill(7, 33, 14, 58, T.PATH); // main vertical path
-    fill(1, 43, 21, 46, T.PATH); // horizontal path
-    // Town border trees
-    vline(0, 30, 59, T.TREE); vline(22, 30, 59, T.TREE);
-    hline(59, 0, 79, T.TREE);
-    // Pallet buildings
-    // Player's house (big)
-    fill(2, 35, 6, 40, T.WALL);
-    fill(2, 35, 6, 36, T.HOUSE); set(4, 40, T.DOOR);
-    // Rival's house (big)
-    fill(15, 35, 20, 40, T.WALL);
-    fill(15, 35, 20, 36, T.HOUSE2); set(17, 40, T.DOOR);
-    // Oak's lab (large building)
-    fill(2, 48, 10, 57, T.WALL);
-    fill(2, 48, 10, 50, T.HOUSE3); set(6, 57, T.DOOR);
-    // More houses
-    fill(14, 48, 20, 53, T.WALL);
-    fill(14, 48, 20, 49, T.HOUSE); set(17, 53, T.DOOR);
-    // Fence around lab area
-    hline(58, 1, 7, T.FENCE); hline(58, 10, 21, T.FENCE);
-    vline(1, 47, 58, T.FENCE); vline(11, 47, 58, T.FENCE);
-    // Signs
-    set(8, 34, T.SIGN); set(8, 43, T.SIGN);
-    // Flowers
-    for (let i = 0; i < 8; i++) { set(3 + i, 42, T.FLOWER); set(12 + i, 42, T.FLOWER); }
-    // Water at south
-    fill(1, 56, 21, 58, T.WATER);
-
-    // ════════════════════════════════
-    // ROUTE 1 (x:8-14, y:10-33)
-    // ════════════════════════════════
-    fill(7, 10, 15, 33, T.GRASS);
-    fill(9, 10, 13, 33, T.PATH);
-    // Tall grass patches
-    fill(7, 14, 8, 20, T.TALL); fill(14, 14, 15, 20, T.TALL);
-    fill(7, 24, 8, 30, T.TALL); fill(14, 24, 15, 30, T.TALL);
-    // Trees alongside
-    vline(6, 10, 33, T.TREE); vline(16, 10, 33, T.TREE);
-    // Signs
-    set(11, 12, T.SIGN); set(11, 31, T.SIGN);
-    // Ledge (can jump down)
-    hline(22, 7, 15, T.LEDGE);
-
-    // ════════════════════════════════
-    // VIRIDIAN CITY (x:1-21, y:1-12)
-    // ════════════════════════════════
-    fill(1, 1, 21, 12, T.GRASS);
-    fill(7, 1, 14, 12, T.PATH); // main path
-    fill(1, 5, 21, 8, T.PATH);  // cross street
-    // Viridian buildings
-    // Pokémon Center (big, left side)
-    fill(1, 1, 6, 6, T.WALL); fill(1, 1, 6, 3, T.POKE_CENTER); set(3, 6, T.DOOR);
-    // Pokémon Mart
-    fill(15, 1, 21, 6, T.WALL); fill(15, 1, 21, 3, T.MART); set(18, 6, T.DOOR);
-    // Viridian Gym (large)
-    fill(1, 8, 6, 12, T.WALL); fill(1, 8, 6, 9, T.GYM); set(3, 12, T.DOOR);
-    // NPC House
-    fill(14, 8, 20, 12, T.WALL); fill(14, 8, 20, 9, T.HOUSE); set(17, 12, T.DOOR);
-    // More houses
-    fill(8, 9, 12, 12, T.WALL); fill(8, 9, 12, 10, T.HOUSE2); set(10, 12, T.DOOR);
-    // Signs
-    set(9, 3, T.SIGN); set(7, 9, T.SIGN);
-    // Trees around
-    hline(0, 0, 79, T.TREE); vline(0, 0, 30, T.TREE);
-    // Flowers
-    for (let i = 0; i < 5; i++) set(7 + i, 4, T.FLOWER);
-
-    // ════════════════════════════════
-    // ROUTE 22 (x:22-40, y:33-58) — east from Pallet / south route
-    // ════════════════════════════════
-    fill(22, 33, 40, 58, T.GRASS);
-    fill(22, 44, 40, 47, T.PATH); // main road east
-    fill(22, 44, 35, 47, T.PATH);
-    // Tall grass
-    fill(22, 33, 30, 43, T.TALL); fill(22, 48, 30, 58, T.TALL);
-    fill(32, 33, 40, 43, T.TALL); fill(32, 48, 40, 58, T.TALL);
-    // Water lake south
-    fill(22, 55, 40, 58, T.WATER);
-    // Bridge
-    hline(45, 22, 32, T.BRIDGE);
-    fill(22, 44, 22, 47, T.PATH); // connection to pallet
-    vline(22, 33, 47, T.PATH); // vertical connector south
-    // Trees border
-    vline(41, 30, 59, T.TREE);
-    hline(32, 22, 41, T.TREE);
-
-    // ════════════════════════════════
-    // ROUTE 3 (x:22-45, y:10-32) - connects Viridian to Pewter
-    // ════════════════════════════════
-    fill(22, 1, 45, 32, T.GRASS);
-    fill(22, 13, 45, 16, T.PATH); // main east road
-    fill(22, 1, 25, 16, T.PATH); // connect to viridian
-    // Tall grass
-    fill(26, 1, 32, 12, T.TALL); fill(26, 17, 32, 25, T.TALL);
-    fill(38, 1, 44, 12, T.TALL); fill(38, 17, 44, 25, T.TALL);
-    // Trees
-    hline(0, 22, 55, T.TREE);
-    vline(22, 1, 32, T.PATH); // vertical
-    // Stone path variation
-    fill(33, 13, 37, 16, T.PATH_DARK);
-    // Signs
-    set(23, 14, T.SIGN); set(38, 14, T.SIGN);
-
-    // ════════════════════════════════
-    // PEWTER CITY (x:45-65, y:1-20)
-    // ════════════════════════════════
-    fill(45, 1, 65, 20, T.GRASS);
-    fill(45, 8, 65, 11, T.PATH); // main road
-    fill(52, 1, 56, 20, T.PATH); // cross street
-    // Pewter buildings
-    // Pokémon Center
-    fill(45, 1, 51, 7, T.WALL); fill(45, 1, 51, 3, T.POKE_CENTER); set(48, 7, T.DOOR);
-    // Pokémon Mart
-    fill(57, 1, 63, 7, T.WALL); fill(57, 1, 63, 3, T.MART); set(60, 7, T.DOOR);
-    // Museum (big)
-    fill(45, 12, 51, 20, T.WALL); fill(45, 12, 51, 14, T.HOUSE3); set(48, 20, T.DOOR);
-    // Pewter Gym (large)
-    fill(57, 12, 65, 20, T.WALL); fill(57, 12, 65, 14, T.GYM); set(61, 20, T.DOOR);
-    // NPC houses
-    fill(46, 8, 50, 11, T.WALL); fill(46, 8, 50, 9, T.HOUSE); set(48, 11, T.DOOR);
-    fill(58, 8, 64, 11, T.WALL); fill(58, 8, 64, 9, T.HOUSE2); set(61, 11, T.DOOR);
-    // Signs
-    set(53, 6, T.SIGN); set(53, 13, T.SIGN);
-    // Flowers
-    for (let i = 0; i < 4; i++) { set(45 + i, 7, T.FLOWER); set(57 + i, 7, T.FLOWER); }
-    // Trees border Pewter
-    vline(66, 0, 30, T.TREE); hline(21, 44, 66, T.TREE);
-
-    // ════════════════════════════════
-    // MT. MOON PASS (x:65-72, y:1-30) - cave/mountain area
-    // ════════════════════════════════
-    fill(65, 1, 72, 30, T.MOUNTAIN);
-    fill(66, 10, 71, 13, T.CAVE); // cave entrance
-    fill(66, 13, 71, 25, T.STONE); // cave floor
-    fill(66, 25, 71, 28, T.CAVE); // exit
-    set(68, 10, T.SIGN);
-
-    // ════════════════════════════════
-    // ROUTE 4 (x:65-79, y:10-30) - east of mt moon, to Cerulean
-    // ════════════════════════════════
-    fill(72, 10, 79, 30, T.GRASS);
-    fill(72, 15, 79, 18, T.PATH);
-    fill(72, 15, 79, 18, T.TALL); // all tall grass
-    fill(73, 15, 78, 17, T.PATH); // path through
-    vline(79, 0, 59, T.TREE);
-
-    // ════════════════════════════════
-    // CERULEAN CITY (x:65-79, y:1-12)
-    // ════════════════════════════════
-    fill(65, 1, 79, 12, T.GRASS);
-    fill(70, 1, 74, 12, T.PATH); // main road
-    fill(65, 5, 79, 8, T.PATH);  // cross road
-    // Cerulean buildings
-    // Pokémon Center
-    fill(65, 1, 70, 6, T.WALL); fill(65, 1, 70, 3, T.POKE_CENTER); set(67, 6, T.DOOR);
-    // Mart
-    fill(74, 1, 79, 6, T.WALL); fill(74, 1, 79, 3, T.MART); set(76, 6, T.DOOR);
-    // Cerulean Gym (cascade badge)
-    fill(65, 8, 70, 12, T.WALL); fill(65, 8, 70, 9, T.GYM); set(67, 12, T.DOOR);
-    // Misty's house / NPC houses
-    fill(74, 8, 79, 12, T.WALL); fill(74, 8, 79, 9, T.HOUSE); set(76, 12, T.DOOR);
-    // Bike shop
-    fill(71, 8, 73, 12, T.WALL); fill(71, 8, 73, 9, T.HOUSE2); set(72, 12, T.DOOR);
-    set(71, 5, T.SIGN); set(72, 4, T.SIGN);
-    // Flowers
-    for (let i = 0; i < 3; i++) { set(65 + i, 4, T.FLOWER); set(75 + i, 4, T.FLOWER); }
-    // Water (Cerulean has river/HM surf area)
-    fill(65, 13, 79, 20, T.WATER);
-    hline(13, 65, 79, T.BRIDGE);
-
-    // Connect all routes together
-    // Route 1 connects Pallet<->Viridian: already done via path at x:9-13
-    // Route 3 connects Viridian<->Pewter: x:22-45 y:14-15
-    fill(22, 13, 45, 16, T.PATH);
-    // Mt Moon connects Pewter->Cerulean via path at x:65-72
-    fill(65, 15, 72, 18, T.PATH);
-    // Pallet Town south route already connected
-
-    return m;
   }
-
-  const MAP = buildMap();
 
   function getTile(tx, ty) {
     if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return T.WALL;
@@ -301,9 +177,9 @@
 
   // ─── COLLISION ───────────────────────────────────────────────────────
   const BLOCKED_TILES = new Set([
-    T.TREE, T.WALL, T.WATER, T.FENCE, T.MOUNTAIN,
+    T.TREE, T.WALL, T.WATER, T.FENCE,
     T.HOUSE, T.HOUSE2, T.HOUSE3, T.GYM,
-    T.POKE_CENTER, T.MART, T.CAVE, T.STONE,
+    T.POKE_CENTER, T.MART, T.CAVE, T.MOUNTAIN, T.STONE,
   ]);
   // Tiles you can interact with but not walk on
   const INTERACT_TILES = new Set([
@@ -321,87 +197,67 @@
   }
 
   // ─── SIGNS & LOCATIONS ───────────────────────────────────────────────
+  // Key format: 'col-row'  (x-y in tile coords)
   const SIGNS = {
-    '8-34':  'PALLET TOWN\nA tranquil setting of\nrustic pursuit.\nPop. 3',
-    '8-43':  'Welcome to ROUTE 1!\nWild Pokémon appear\nin TALL GRASS!',
-    '11-12': 'ROUTE 1 - NORTH\nVIRIDIAN CITY  3km →',
-    '11-31': 'PALLET TOWN ← 2km\nRoute 1 — Stay on\nthe path!',
-    '23-14': 'ROUTE 3\n← Viridian City\nPewter City → ',
-    '38-14': 'MT. MOON AREA\nCave ahead!\nBeware of ZUBAT!',
-    '53-6':  'PEWTER CITY\nA stone gray city\nHarmonious stone.',
-    '53-13': 'PEWTER GYM →\nGym Leader: BROCK\nRock-type Specialist',
-    '68-10': 'MT. MOON\nMany rare Pokémon\nlive here.\nWATCH YOUR STEP!',
-    '71-5':  'CERULEAN CITY\nA floral city that\nblossoms with beauty.',
-    '72-4':  'CERULEAN GYM →\nGym Leader: MISTY\nWater-type Specialist',
-    '9-3':   'VIRIDIAN CITY\nEver green, ever fresh.',
-    '7-9':   'VIRIDIAN GYM →\nGym Leader: ???\nMystery specialist',
+    // Viridian City signs (rows 4-5, col 13 based on map)
+    '13-4':  'VIRIDIAN CITY\nEver green and fresh.\nPop. 12',
+    '13-5':  'VIRIDIAN GYM →\nGym Leader: ???\nMystery specialist.',
+    // Route 1 signs (col 10, rows 17 and 29)
+    '10-17': 'ROUTE 1\nWild Pokémon live\nin the TALL GRASS!',
+    '10-29': 'PALLET TOWN ↓\nHome of PROF. OAK\nRoute 1 — stay alert!',
+    // Pallet Town signs (rows 45, cols 3 and 14)
+    '3-45':  'PALLET TOWN\nA tranquil setting of\nrustic pursuit.\nPop. 5',
+    '14-45': 'ROUTE 1 ↑\nViridian City is\n3km to the north.',
   };
 
-  // ─── NPC DATABASE PER MAP ────────────────────────────────────────────
+  // ─── NPC DATABASE ─────────────────────────────────────────────────────
+  // Positions match the new 28×50 character map above.
+  // Viridian City: rows 0-10.  Route 1: rows 12-30.  Pallet: rows 31-47.
   const NPC_DEFS = [
-    // PALLET TOWN
-    { id: 'GIRL_PALLET', tx: 5, ty: 44, emoji: '👧', name: 'GIRL', area: 'pallet', dialog: ["My dad went to\nViridian City...", "He studies Pokémon\nfor PROF. OAK!", "Be careful in\nthe tall grass!"] },
-    { id: 'BOY_PALLET', tx: 18, ty: 44, emoji: '👦', name: 'BOY', area: 'pallet', dialog: ["Prof. OAK gave out\nstarter Pokémon!", "I got BULBASAUR!\nIt's the best!", "Go see the Prof\nin his lab!"] },
-    { id: 'OLD_MAN_PALLET', tx: 10, ty: 50, emoji: '👴', name: 'OLD MAN', area: 'pallet', dialog: ["In my day, we walked\nbare foot!", "Those Pokémon in the\ngrass were tougher.", "The Pokémon Center\nis free! Use it!"] },
-    // ROUTE 1
-    { id: 'LASS_R1', tx: 11, ty: 18, emoji: '🧒', name: 'LASS', area: 'route1', dialog: ["I love Pokémon!\nEspecially PIDGEY!", "They fly so high~"] },
-    { id: 'TRAINER_R1', tx: 10, ty: 25, emoji: '🧑', name: 'YOUNGSTER JOE', area: 'route1', trainer: true, dialog: ["Hey! I bet my\nSHORTS are comfy!", "Want to battle?!", "Let's go!!!"], pokemon: 'RATTATA', level: 4 },
-    // VIRIDIAN CITY
-    { id: 'HIKER_VIR', tx: 10, ty: 3, emoji: '🧓', name: 'HIKER', area: 'viridian', dialog: ["VIRIDIAN GYM has\nbeen closed lately...", "Nobody knows who\nthe leader is!", "Train hard first!"] },
-    { id: 'GIRL_VIR', tx: 18, ty: 3, emoji: '👧', name: 'GIRL', area: 'viridian', dialog: ["The POKÉ MART here\nhas great items!", "Buy lots of\nPoké Balls!"] },
-    { id: 'TRAINER_VIR', tx: 20, ty: 8, emoji: '👦', name: 'BUG CATCHER', area: 'viridian', trainer: true, dialog: ["I love bugs!\nBug types rule!", "Battle me!"], pokemon: 'CATERPIE', level: 5 },
-    { id: 'OLD_VIR', tx: 9, ty: 10, emoji: '👴', name: 'OLD FISHER', area: 'viridian', dialog: ["I fish here every\nday for MAGIKARP.", "Weak now but it\nbecomes GYARADOS!", "Incredible, right?"] },
-    // ROUTE 3
-    { id: 'TRAINER_R3A', tx: 30, ty: 14, emoji: '🧑', name: 'HIKER BOB', area: 'route3', trainer: true, dialog: ["The mountains ahead\nare dangerous!", "My GEODUDE will\nstop you!"], pokemon: 'GEODUDE', level: 8 },
-    { id: 'TRAINER_R3B', tx: 39, ty: 15, emoji: '👩', name: 'LASS LAURA', area: 'route3', trainer: true, dialog: ["Teehee! Battle me\nif you dare!", "My JIGGLYPUFF\nwill put you to sleep!"], pokemon: 'JIGGLYPUFF', level: 7 },
-    { id: 'NPC_R3', tx: 34, ty: 13, emoji: '👦', name: 'BOY', area: 'route3', dialog: ["MT. MOON is past\nPewter City.", "Lots of ZUBAT\nin the cave!", "Bring REPELS!"] },
-    // PEWTER CITY
-    { id: 'HIKER_PEWTER', tx: 53, ty: 5, emoji: '🧓', name: 'HIKER', area: 'pewter', dialog: ["BROCK's gym uses\nROCK types.", "Grass or Water\nmoves work well!", "Good luck, kid."] },
-    { id: 'GIRL_PEWTER', tx: 60, ty: 5, emoji: '👧', name: 'GIRL', area: 'pewter', dialog: ["The MUSEUM here\nhas amazing fossils!", "Have you seen the\nold AMBER stone?"] },
-    { id: 'TRAINER_PEWTER', tx: 49, ty: 9, emoji: '👦', name: 'GYM TRAINER', area: 'pewter', trainer: true, dialog: ["BROCK's gym is\nnearby!", "You must beat ME\nfirst! Go GEODUDE!"], pokemon: 'GEODUDE', level: 10 },
-    // MT. MOON
-    { id: 'TRAINER_MOON', tx: 67, ty: 17, emoji: '🧑', name: 'SUPER NERD', area: 'mtmoon', trainer: true, dialog: ["I'm a SUPER NERD!\nI love Pokémon fossils!", "Battle!"], pokemon: 'ZUBAT', level: 12 },
-    // CERULEAN
-    { id: 'HIKER_CER', tx: 70, ty: 3, emoji: '🧓', name: 'HIKER', area: 'cerulean', dialog: ["MISTY is the gym\nleader here.", "She uses WATER\ntypes — be careful!", "Electric beats Water!"] },
-    { id: 'GIRL_CER', tx: 77, ty: 3, emoji: '👧', name: 'GIRL', area: 'cerulean', dialog: ["This city is so\nbeautiful!", "The river here\nis so peaceful."] },
-    { id: 'TRAINER_CER', tx: 72, ty: 10, emoji: '👩', name: 'SWIMMER DIANE', area: 'cerulean', trainer: true, dialog: ["I love water!\nMy Pokémon do too!", "Let's battle!"], pokemon: 'STARYU', level: 14 },
-    { id: 'BOY_CER', tx: 67, ty: 10, emoji: '👦', name: 'BOY', area: 'cerulean', dialog: ["My BIKE was stolen\nby a bad guy!", "The BIKE SHOP gives\nyou one for a coupon.", "Get the coupon\nfrom VERMILLION!"] },
+    // ── VIRIDIAN CITY (rows 0-10) ──
+    { id: 'HIKER_VIR',   tx:10, ty:4,  emoji:'🧓', name:'HIKER',      area:'viridian',
+      dialog:["VIRIDIAN GYM is\nclosed for now...", "No one knows who\nthe Gym Leader is!", "Train hard first!"] },
+    { id: 'GIRL_VIR',    tx:18, ty:4,  emoji:'👧', name:'GIRL',       area:'viridian',
+      dialog:["The POKÉ MART\nhas great items!", "Stock up on\nPOKÉ BALLS!"] },
+    { id: 'TRAINER_VIR', tx:20, ty:9,  emoji:'👦', name:'BUG CATCHER', area:'viridian', trainer:true,
+      dialog:["Bug types are\nthe BEST!", "Prove me wrong!"], pokemon:'CATERPIE', level:5 },
+    { id: 'OLD_VIR',     tx:9,  ty:9,  emoji:'👴', name:'OLD FISHER',  area:'viridian',
+      dialog:["I fish every day\nfor MAGIKARP here.", "Weak... but it\nbecomes GYARADOS!", "Incredible!"] },
+    // ── ROUTE 1 (rows 12-30) ──
+    { id: 'LASS_R1',     tx:15, ty:18, emoji:'🧒', name:'LASS',        area:'route1',
+      dialog:["I love PIDGEY!\nThey fly so high~", "The tall grass\nis full of Pokémon!"] },
+    { id: 'TRAINER_R1',  tx:10, ty:25, emoji:'🧑', name:'YOUNGSTER JOE', area:'route1', trainer:true,
+      dialog:["Hey! I bet my\nSHORTS are comfy!", "Battle me!"], pokemon:'RATTATA', level:4 },
+    // ── PALLET TOWN (rows 31-47) ──
+    { id: 'GIRL_PALLET', tx:5,  ty:37, emoji:'👧', name:'GIRL',        area:'pallet',
+      dialog:["My dad is away\nat Viridian City...", "He works for\nPROF. OAK!", "Stay safe out there!"] },
+    { id: 'BOY_PALLET',  tx:18, ty:37, emoji:'👦', name:'RIVAL BOY',   area:'pallet',
+      dialog:["Prof. OAK gave\nus starter Pokémon!", "I picked BULBASAUR!\nIt's the strongest!", "Try to keep up!"] },
+    { id: 'OLD_PALLET',  tx:10, ty:42, emoji:'👴', name:'OLD MAN',     area:'pallet',
+      dialog:["I used to be a\nPokémon trainer!", "The POKÉMON CENTER\nin Viridian is free.", "Use it often!"] },
   ];
 
-  // Location zones
+  // Location zones — based on new 28×50 map
+  // Viridian: rows 0-10.  Route 1: rows 12-30.  Pallet: rows 31-47.  Water: rows 48+
   function getLocationName(tx, ty) {
-    if (tx >= 65 && ty <= 12) return 'CERULEAN CITY';
-    if (tx >= 65 && ty <= 30) return 'MT. MOON';
-    if (tx >= 45 && tx <= 65 && ty <= 20) return 'PEWTER CITY';
-    if (tx >= 22 && tx <= 45 && ty <= 32) return 'ROUTE 3';
-    if (tx >= 7 && tx <= 15 && ty <= 33) return 'ROUTE 1';
-    if (tx >= 22 && ty >= 33) return 'ROUTE 22';
-    if (tx <= 22 && ty <= 12) return 'VIRIDIAN CITY';
-    if (tx <= 22 && ty >= 33) return 'PALLET TOWN';
-    return 'UNKNOWN AREA';
+    if (ty <= 10) return 'VIRIDIAN CITY';
+    if (ty <= 30) return 'ROUTE 1';
+    if (ty <= 47) return 'PALLET TOWN';
+    return 'SOUTH WATERS';
   }
 
   // Wild Pokémon by area
   const WILD_POOLS = {
-    pallet:    ['RATTATA','PIDGEY'],
+    viridian:  ['PIDGEY','RATTATA','JIGGLYPUFF','CATERPIE'],
     route1:    ['PIDGEY','RATTATA','CATERPIE','WEEDLE'],
-    viridian:  ['PIDGEY','RATTATA','JIGGLYPUFF'],
-    route3:    ['PIDGEY','RATTATA','JIGGLYPUFF','MEOWTH','ABRA'],
-    pewter:    ['GEODUDE','ZUBAT','RATTATA'],
-    mtmoon:    ['ZUBAT','GEODUDE','CLEFAIRY'],
-    cerulean:  ['PIDGEOTTO','ABRA','MEOWTH'],
+    pallet:    ['RATTATA','PIDGEY'],
     water:     ['MAGIKARP','MAGIKARP','PSYDUCK'],
   };
 
   function getWildPool(tx, ty) {
     const loc = getLocationName(tx, ty);
-    if (loc === 'CERULEAN CITY') return WILD_POOLS.cerulean;
-    if (loc === 'MT. MOON') return WILD_POOLS.mtmoon;
-    if (loc === 'PEWTER CITY') return WILD_POOLS.pewter;
-    if (loc === 'ROUTE 3') return WILD_POOLS.route3;
-    if (loc === 'ROUTE 1') return WILD_POOLS.route1;
     if (loc === 'VIRIDIAN CITY') return WILD_POOLS.viridian;
-    if (loc === 'ROUTE 22') return WILD_POOLS.route3;
+    if (loc === 'ROUTE 1')       return WILD_POOLS.route1;
     return WILD_POOLS.pallet;
   }
 
@@ -593,7 +449,7 @@
   let toastTimer = null;
 
   const player = {
-    x: 10, y: 45, px: 0, py: 0, dir: 2, moving: false, _pendingBattle: null, name: 'RED',
+    x: 10, y: 36, px: 0, py: 0, dir: 2, moving: false, _pendingBattle: null, name: 'RED',
   };
 
   // ─── WEB AUDIO SFX ────────────────────────────────────────────────────
@@ -1324,24 +1180,15 @@
   }
 
   function updateNPCsForLocation() {
-    const loc = getLocationName(player.x, player.y).toLowerCase().replace(/ /g, '_');
-    // Determine area key
+    const loc = getLocationName(player.x, player.y);
     let areaKey = 'pallet';
-    const l = location.toLowerCase();
-    if (l.includes('cerulean')) areaKey = 'cerulean';
-    else if (l.includes('mt.') || l.includes('moon')) areaKey = 'mtmoon';
-    else if (l.includes('pewter')) areaKey = 'pewter';
-    else if (l.includes('route 3') || l.includes('route 22')) areaKey = 'route3';
-    else if (l.includes('route 1')) areaKey = 'route1';
-    else if (l.includes('viridian')) areaKey = 'viridian';
+    if (loc === 'VIRIDIAN CITY') areaKey = 'viridian';
+    else if (loc === 'ROUTE 1')  areaKey = 'route1';
+    else if (loc === 'PALLET TOWN') areaKey = 'pallet';
 
-    currentNPCs = NPC_DEFS.filter(n => {
-      return n.area === areaKey ||
-        (areaKey === 'pallet' && n.area === 'pallet') ||
-        true; // show all within camera range
-    }).map(n => {
-      return { ...n, defeated: !!npcDefeated[n.id] };
-    });
+    currentNPCs = NPC_DEFS
+      .filter(n => n.area === areaKey)
+      .map(n => ({ ...n, defeated: !!npcDefeated[n.id] }));
   }
 
   // ─── INTERACT ─────────────────────────────────────────────────────────
