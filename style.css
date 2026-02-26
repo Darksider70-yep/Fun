@@ -690,3 +690,28 @@ button { font-family: var(--font); cursor: pointer; }
 .s-slp { background: #70584844; color: #c0a888; border: 1px solid #705848; }
 .s-prz { background: #f8d03044; color: #f8d030; border: 1px solid #f8d030; }
 .s-frz { background: #98d8d844; color: #98d8d8; border: 1px solid #98d8d8; }
+
+/* ══ STAT ROW ══════════════════════════════════ */
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 8px; border-bottom: 1px solid rgba(48,98,48,.2);
+  font-size: 7px; color: var(--gb-white);
+}
+
+/* ══ PP MOVE ROW ════════════════════════════════ */
+.pp-move-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; margin-bottom: 4px;
+  background: rgba(20,40,20,.5); border-radius: 4px;
+  font-size: 7px; color: var(--gb-white);
+  padding-left: 10px;
+}
+
+/* ══ CONTROLS HINT FADE ══════════════════════════════ */
+#controls-hint.fade {
+  animation: fadeOut 1.5s var(--ease) forwards;
+}
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
