@@ -630,3 +630,63 @@ button { font-family: var(--font); cursor: pointer; }
   .starter-card { min-width: 150px; }
   #battle-action-panel { width: 220px; }
 }
+
+/* ══ MOVE PP INLINE ═════════════════════════════════ */
+.move-pp-inline {
+  margin-left: auto; font-size: 5px;
+  padding: 2px 5px; border-radius: 3px;
+  background: rgba(0,0,0,.3);
+}
+.move-item {
+  display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+  border-radius: 4px; cursor: pointer; border: 1px solid transparent;
+  transition: background .1s;
+}
+.move-item.selected, .move-item:hover {
+  background: rgba(155,188,15,.15); border-color: rgba(155,188,15,.4);
+}
+
+/* ══ POKÉDEX PANEL ══════════════════════════════════ */
+#pokedex-panel {
+  position: absolute; inset: 55px 0 0 0; z-index: 45;
+  background: rgba(6,18,6,.98); display: flex; flex-direction: column;
+  animation: panelSlide .2s var(--ease); overflow: hidden;
+}
+#pdx-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 2px solid var(--gb-mid);
+  font-size: 10px; color: var(--gb-green); flex-shrink: 0; gap: 16px;
+}
+#pdx-header button {
+  background: rgba(204,34,0,.3); border: 1px solid var(--red);
+  color: var(--red-l); font-size: 7px; padding: 6px 10px;
+  border-radius: 4px; cursor: pointer; font-family: var(--font);
+}
+#pdx-count { font-size: 7px; color: var(--gb-light); }
+#pdx-body {
+  flex: 1; overflow-y: auto; display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px; padding: 14px;
+}
+.pdx-entry {
+  background: rgba(20,40,20,.6); border: 1px solid rgba(48,98,48,.3);
+  border-radius: 8px; padding: 10px 14px;
+  display: grid; grid-template-columns: 36px 1fr auto; grid-template-rows: auto auto;
+  gap: 4px 10px; align-items: center;
+}
+.pdx-entry.pdx-seen { border-color: rgba(155,188,15,.4); background: rgba(30,60,20,.7); }
+.pdx-emoji { font-size: 24px; grid-row: 1/3; text-align: center; }
+.pdx-name  { font-size: 7.5px; color: var(--gb-white); }
+.pdx-types { display: flex; gap: 4px; flex-wrap: wrap; }
+.pdx-desc  { font-size: 5.5px; color: rgba(224,248,208,.5); grid-column: 2/4; line-height: 1.7; }
+
+/* ══ STATUS BADGE FIX ═══════════════════════════════ */
+.status-hidden { display: none; }
+.status-badge {
+  font-size: 5px; padding: 2px 5px; border-radius: 3px; font-weight: bold;
+}
+.s-psn { background: #a040a044; color: #c060c0; border: 1px solid #a040a0; }
+.s-brn { background: #e8482044; color: #e84820; border: 1px solid #e84820; }
+.s-slp { background: #70584844; color: #c0a888; border: 1px solid #705848; }
+.s-prz { background: #f8d03044; color: #f8d030; border: 1px solid #f8d030; }
+.s-frz { background: #98d8d844; color: #98d8d8; border: 1px solid #98d8d8; }
